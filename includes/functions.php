@@ -20,13 +20,17 @@ function sanitize($data) {
 function getAllQuestions() {
     global $conn;
     $sql = "SELECT * FROM questions ORDER BY RAND() LIMIT 10";
-    $result = $conn->query($sql);
-    
     $questions = [];
-    if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $questions[] = $row;
+    try {
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $questions[] = $row;
+            }
         }
+    } catch (Exception $e) {
+        // Table might not exist or another DB error occurred. Log and return empty set.
+        error_log("getAllQuestions error: " . $e->getMessage());
     }
     return $questions;
 }
@@ -38,10 +42,13 @@ function getQuestionById($id) {
     global $conn;
     $id = (int)$id;
     $sql = "SELECT * FROM questions WHERE id = $id";
-    $result = $conn->query($sql);
-    
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_assoc();
+    try {
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+    } catch (Exception $e) {
+        error_log("getQuestionById error: " . $e->getMessage());
     }
     return null;
 }
@@ -60,8 +67,12 @@ function saveResult($user_id, $score, $total_questions, $time_taken, $status = '
     
     $sql = "INSERT INTO results (user_id, score, total_questions, time_taken, status) 
             VALUES ($user_id, $score, $total_questions, $time_taken, '$status')";
-    
-    return $conn->query($sql);
+    try {
+        return $conn->query($sql);
+    } catch (Exception $e) {
+        error_log("saveResult error: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**
@@ -71,13 +82,16 @@ function getUserResults($user_id) {
     global $conn;
     $user_id = (int)$user_id;
     $sql = "SELECT * FROM results WHERE user_id = $user_id ORDER BY created_at DESC";
-    $result = $conn->query($sql);
-    
     $results = [];
-    if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $results[] = $row;
+    try {
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $results[] = $row;
+            }
         }
+    } catch (Exception $e) {
+        error_log("getUserResults error: " . $e->getMessage());
     }
     return $results;
 }
@@ -97,9 +111,13 @@ function getUserStats($user_id) {
             FROM results 
             WHERE user_id = $user_id";
     
-    $result = $conn->query($sql);
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_assoc();
+    try {
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+    } catch (Exception $e) {
+        error_log("getUserStats error: " . $e->getMessage());
     }
     return null;
 }
