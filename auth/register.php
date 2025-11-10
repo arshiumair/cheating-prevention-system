@@ -112,13 +112,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         error_log("registration log failed: " . $e->getMessage());
                     }
 
-                    $success = 'Registration successful! Redirecting to exam page...';
+                    $success = 'Registration successful! Redirecting to home page...';
                     
                     // Clean up
                     $insertStmt->close();
                     
                     // Redirect after a brief delay to show success message
-                    header("refresh:2;url=" . BASE_URL . "/exam.php");
+                    header("refresh:2;url=" . BASE_URL . "/index.php");
                 } else {
                     throw new Exception("Failed to create account.");
                 }
